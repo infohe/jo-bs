@@ -1,0 +1,68 @@
+name: Building And Deploying Meteor Project
+on:
+  push:
+    branches: [deploye]
+  pull_request:
+    branches: [deploye]
+jobs:
+  build:
+    environment: staging
+    env:
+      PORT: ${{ secrets.PORT }}
+      DB: ${{ secrets.MONGO_URL }}
+      URL: ${{ secrets.SITE }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        meteor: ["1.8.0"]
+        node: ["8.11"]
+    name: Meteor Build
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup meteor
+        uses: meteorengineer/setup-meteor@v1
+      - name: Setup Nodejs
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --version
+      - run: npm --version
+      - run: meteor --version
+      - run: meteor npm install
+      - name: Build App
+        run: meteor build --directory ./
+      - run: cp Dockerfile ./bundle/
+      - name: Log in to GitHub Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Building Docker Image
+        run: docker build -t ${{ github.repository }} -t ${{ github.sha }} --build-arg CONTAINER_PORT=${PORT} --build-arg DB_URL=${DB} --build-arg SITE_URL=${URL} ./bundle/
+      - name: tagging the image
+        run: docker tag ${{ github.repository }} docker.pkg.github.com/${{ github.repository }}/wework_meteor
+      - name: Publishing Docker Container Image
+        run: docker push docker.pkg.github.com/${{ github.repository }}/wework_meteor:latest
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/staging.key
+          chmod 600 ~/.ssh/staging.key
+          cat >>~/.ssh/config <<END
+          Host staging
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/staging.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.HOST_USER }}
+          SSH_KEY: ${{ secrets.HOST_SSH_KEY }}
+          SSH_HOST: ${{ secrets.HOST_IP }}
+      - name: pulling docker image in server
+        run: ssh staging 'echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin && docker pull docker.pkg.github.com/${{ github.repository }}/wework_meteor:latest && docker stop wework_meteor'
+      - name: deploying docker in server
+        run: ssh staging 'docker rm wework_meteor ; docker run -d --restart=always -p ${{ secrets.PORT }}:${{ secrets.PORT }} --name wework_meteor docker.pkg.github.com/${{ github.repository }}/wework_meteor:latest'
+      - name: cleaning SSH
+        run: shred -u ~/.ssh/*
