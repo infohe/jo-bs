@@ -11,6 +11,7 @@ jobs:
       PORT: ${{ secrets.PORT }}
       DB: ${{ secrets.MONGO_URL }}
       URL: ${{ secrets.SITE }}
+      MAIL_URL: ${{ secrets.MAIL_URL }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -39,7 +40,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Building Docker Image
-        run: docker build -t ${{ github.repository }} -t ${{ github.sha }} --build-arg CONTAINER_PORT=${PORT} --build-arg DB_URL=${DB} --build-arg SITE_URL=${URL} ./bundle/
+        run: docker build -t ${{ github.repository }} -t ${{ github.sha }} --build-arg CONTAINER_PORT=${PORT} --build-arg DB_URL=${DB} --build-arg SITE_URL=${URL} --build-arg MAIL_URL=${MAIL_URL} ./bundle/
       - name: tagging the image
         run: docker tag ${{ github.repository }} docker.pkg.github.com/${{ github.repository }}/wework_meteor
       - name: Publishing Docker Container Image
