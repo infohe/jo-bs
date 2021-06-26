@@ -1,6 +1,6 @@
 AdminConfig = {
   name: 'jo-bs.com',
-  adminEmails: ['ajmal@infohe.com'],
+  adminEmails: ['ajmal@infohe.com', 'noor@infohe.com', 'sajid@infohe.com', 'forumautomation@gmail.com', 'social@infohe.com'],
   collections: {
     Jobs: {
       icon: 'briefcase',
