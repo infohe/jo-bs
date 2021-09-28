@@ -1,0 +1,50 @@
+{
+    "properties": {
+        "_id": {
+            "bsonType": "string"
+        },
+        "company": {
+            "bsonType": "string"
+        },
+        "contact": {
+            "bsonType": "string"
+        },
+        "createdAt": {
+            "bsonType": "date"
+        },
+        "description": {
+            "bsonType": "string"
+        },
+        "htmlDescription": {
+            "bsonType": "string"
+        },
+        "jobtype": {
+            "bsonType": "string"
+        },
+        "location": {
+            "bsonType": "string"
+        },
+        "remote": {
+            "bsonType": "bool"
+        },
+        "status": {
+            "bsonType": "string"
+        },
+        "title": {
+            "bsonType": "string"
+        },
+        "updatedAt": {
+            "bsonType": "date"
+        },
+        "url": {
+            "bsonType": "string"
+        },
+        "userId": {
+            "bsonType": "string"
+        },
+        "userName": {
+            "bsonType": "string"
+        }
+    },
+    "title": "job"
+}
